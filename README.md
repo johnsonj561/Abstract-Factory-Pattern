@@ -16,65 +16,62 @@ Purpose: FAU Object Oriented Software Design Course, Sprint 2017
 ----------------------------------------------------------------------------------------------------------------
 
 Intent
-- convert interface of a class into another interface clients expect
-- lets classes work together that normally could not due to incompatible interfaces
+- provides an interface for creating families of related or dependent objects without specifying their conrete class
+
+Also Known As
+- Kit
 
 Motivation
-- sometimes a utility class (designed for reuse) is not compatible with a domain specific interface required by application
-- we define a class so that it adapts a desired interface
-	- inherit the subclass interface and adapted class's implementation
-	- alternatively, compose subclass instance within the adapted class's implementation
-- adapter is often responsible for functionality the adapted class doesn't provide
-- adapter can fulfill desired responsibilities
+- clients are not aware of the concrete classes they're using
+- enforces dependencies between the concrete classes
 
 Applicability
-- when you want to use an existing class and its interface does not match the one required
-- when you want to create a reusable class that cooperates with unrelated or unforeseen classes, classes that may not
-  necessarily have compatible interfaces
-- (object adapter only) when you need to use several existing subclasses, but it's impractical to adapt their interface by
-  subclassing every one. object adapter can adapt the interface of its parent class
+- use when system should be independent of how its products are created, composed, and represented
+- when a system should be configured with one of multiple families of products
+- when a family of related product objects is designed to be used together, and you need to enforce this constraint
+- when you want to provide a class library of products, and you want to reveal just their interfaces and not implementations
 
 Structure
-- see adapterpattern1.png
+- see AbstractFactoryPattern.png
 
 Participants
-- Target
-	- defines the domain specific interface that client uses
+- AbstractFactory
+	- declares the interface for operations that create abstract product objects
+- ConcreteFactory
+	- implements the operations to create concrete product objects
+- AbstractProduct
+	- declares an interface for a type of product object
+- ConcreteProduct
+	- defines a product object to be created by the corresponding concrete factory
+	- implements the AbstractProduct interface
 - Client
-	- collaborates with objects conforming to the Target interface
-- Adaptee
-	- defines an existing interface that needs adapting
-- Adapter
-	- adapts the interface of Adaptee to the Target interface
+	- uses only interfaces declared by AbstractFactory and AbstractProduct classes
 
 Collaborations
-- clients call operations on an Adapter instance, adapter in turn calls Adaptee operations to carry out request
+- normally a single instance of a ConcreteFactory class is created at run time
+	- this concrete factory creates product objects having a particular implementation
+	- to create different pdocut objects, client should use a different concrete factory
+- AbstractFactory defers creation of product objects to its ConcreteFactory subclass
 
 Consequences
-- class and object adapters have trade offs to consider
-	- Class Adapter
-		- adapts adaptee to target by committing to a concrete adaptee class. class adapter won't work when we want to adapt a
-		  class and all of it's subcalsses
-		- allows adapter to override some of adaptee's behavior, since adapter is a subclass of adaptee
-		- introduces only one object and no additional pointer indirection is needed to get to the adaptee
-	- Object Adapter
-		- allows single adapter to work with many adaptees, adaptee itself and all of its subclasses
-		- makes it harder to override adaptee behavior, requires subclassing adaptee and making adapter refer to the subclass
-- need to consider how much adapting an adapter does
-- a class is more reusable when you minize the assumptions other classes must make to use it
-- two way adapters provide transparency, allowing two different clients to view an object differently
+- isolates concrete classes - helps control the classes of objects that an application creates
+	- isolates clients from implementation of classes, clients manipulate instances through their abstract interfaces
+- makes exchanging product families easy
+	- class of concrete factory appears only once, where it's instantiated, makes it easy to change the concrete factory being used
+	- allows for different product configurations simply by changing the concrete factory
+- promotes consistency among products
+- supporting new kinds of products is difficult - extending abstract factories to produce new kinds of products isn't easy
 
 Implementation
-- in C++ implementation of class adapter, adapter would inherit publicly from target and privately from adaptee
-	- adapter would inherit publicly from target and privately from adaptee
-	- adapter is subtype of target, but not of adaptee
-- pluggable adapters - 3 methods of implementations
-	- for all 3, find a narrow interface for adaptee, smallest subset of operations that allow us to adapt
-	- abstract operations - define corresponding abstract operations for the narrow adaptee interface 
-	- delegate objects - requests are forwarded to a delegate object
-	- parameterized adapters - usual way to support pluggable adapters in smalltalk is to parameterie an adapter with one or more blocks
+- Factories as singletons - best implemented as a Singleton because applications only need 1 instance
+- Creating the products - AbstractFactory only declares interface for creating the products, up to ConcreteProduct subclasses to actually create them
+	- most common technique is to define a factory method for each product
+	- concrete factory will specify its products by overriding the factory method for each
+- Defining extensible factories - AbstractFactory usually defines a different operation for each kind of product it can produce
+	- kinds of products are encoded in the operation signatures
+		- adding new kind of product requires changing the AbstractFactory interface and all classes dependent
+		- less safe design is to add parameter to operations where parameter specifies the object to be created
 
 Related Patterns
-- Bridge pattern is similar but different intent
-- Decorator pattern
-- Proxy pattern 
+- Often implemented with Factory Method
+- Concrete Factory is often a singleton
